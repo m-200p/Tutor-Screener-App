@@ -1,9 +1,31 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
+
+interface ISpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  onresult: ((event: ISpeechRecognitionEvent) => void) | null;
+  onerror: ((event: Event) => void) | null;
+}
+
+interface ISpeechRecognitionEvent extends Event {
+  resultIndex: number;
+  results: {
+    length: number;
+    [index: number]: {
+      isFinal: boolean;
+      [index: number]: { transcript: string };
+    };
+  };
+}
+
 declare global {
   interface Window {
-    SpeechRecognition: typeof SpeechRecognition;
-    webkitSpeechRecognition: typeof SpeechRecognition;
+    SpeechRecognition: new () => ISpeechRecognition;
+    webkitSpeechRecognition: new () => ISpeechRecognition;
   }
 }
 interface Message {
@@ -53,7 +75,7 @@ export default function CandidatePage() {
   const [interviewDone, setInterviewDone] = useState(false);
   const [status, setStatus] = useState("");
 
-  const recognitionRef = useRef<InstanceType<typeof SpeechRecognition> | null>(null);
+  const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const finalTranscriptRef = useRef("");
 
@@ -120,7 +142,7 @@ export default function CandidatePage() {
     recognition.interimResults = true;
     recognition.lang = "en-US";
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    recognition.onresult = (event: ISpeechRecognitionEvent) => {
       let interim = "";
       let final = finalTranscriptRef.current;
       for (let i = event.resultIndex; i < event.results.length; i++) {
