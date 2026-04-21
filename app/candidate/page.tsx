@@ -1,6 +1,11 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-
+declare global {
+  interface Window {
+    SpeechRecognition: typeof SpeechRecognition;
+    webkitSpeechRecognition: typeof SpeechRecognition;
+  }
+}
 interface Message {
   role: "user" | "assistant";
   content: string;
@@ -48,7 +53,7 @@ export default function CandidatePage() {
   const [interviewDone, setInterviewDone] = useState(false);
   const [status, setStatus] = useState("");
 
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<InstanceType<typeof SpeechRecognition> | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const finalTranscriptRef = useRef("");
 
